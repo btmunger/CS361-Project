@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>All In One Planner</title>
+  <link rel="stylesheet" href="welcome.css"/>
+  <script src="welcome_view.js"></script>
+</head>
+<body>
+  <h1>All In One Planner</h1>
+  <h2>Welcome back!</h2>
+  <div class="grid">
+    <div id="card1" class="card empty">
+      <p id="createnew1">+ Create New Itinerary</p>
+      <div id = "card1_content">
+        <h3 id="title1"></h3>
+        <p id="desc1" class="desc"></p>
+        <div id="buttons_1" class="card-buttons">
+          <button class="view-btn" onclick="viewItinerary(1,event)">View</button>
+          <button class="delete-btn" onclick="confirmDelete(1, event)">Delete</button>
+        </div>
+      </div>
+    </div>
+    <div id="card2" class="card empty">
+      <p id="createnew2">+ Create New Itinerary</p>
+      <div id = "card2_content">
+        <h3 id="title2"></h3>
+        <p id="desc2" class="desc"></p>
+        <div id="buttons_2" class="card-buttons">
+          <button class="view-btn" onclick="viewItinerary(2, event)">View</button>
+          <button class="delete-btn" onclick="confirmDelete(2, event)">Delete</button>
+        </div>
+      </div>
+    </div>
+    <div id="card3" class="card empty">
+      <p id="createnew3">+ Create New Itinerary</p>
+      <div id = "card3_content">
+        <h3 id="title3"></h3>
+        <p id="desc3" class="desc"></p>
+        <div id="buttons_3" class="card-buttons">
+          <button class="view-btn" onclick="viewItinerary(3, event)">View</button>
+          <button class="delete-btn" onclick="confirmDelete(3, event)">Delete</button>
+        </div>
+      </div>
+    </div>
+    <div id="card4" class="card empty">
+      <p id="createnew4">+ Create New Itinerary</p>
+      <div id = "card4_content">
+        <h3 id="title4"></h3>
+        <p id="desc4" class="desc"></p>
+        <div id="buttons_4" class="card-buttons">
+          <button class="view-btn" onclick="viewItinerary(4, event)">View</button>
+          <button class="delete-btn" onclick="confirmDelete(4, event)">Delete</button>
+        </div>
+      </div>
+    </div>
+    <div id="card5" class="card empty">
+      <p id="createnew5">+ Create New Itinerary</p>
+      <div id = "card5_content">
+        <h3 id="title5"></h3>
+        <p id="desc5" class="desc"></p>
+        <div id="buttons_5" class="card-buttons">
+          <button class="view-btn" onclick="viewItinerary(5, event)">View</button>
+          <button class="delete-btn" onclick="confirmDelete(5, event)">Delete</button>
+        </div>
+      </div>
+    </div>
+  <h4>View your previous itineraries, or create a new one to plan air travel, hotel stays, attractions, and more!</h3>
+</body>
+</html>
