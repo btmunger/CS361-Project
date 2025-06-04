@@ -1,0 +1,22 @@
+{
+  "name": "cs361-project",
+  "version": "1.0.0",
+  "main": "welcome_view.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/btmunger/CS361-Project.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/btmunger/CS361-Project/issues"
+  },
+  "homepage": "https://github.com/btmunger/CS361-Project#readme",
+  "description": "",
+  "dependencies": {
+    "express": "^5.1.0"
+  }
+}

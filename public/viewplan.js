@@ -1,3 +1,5 @@
+console.log("Current Itinerary:" + localStorage.getItem("curr_itinerary"))
+
 function openModal() {
     document.getElementById("helpModal").style.display = "block";
 }
@@ -18,10 +20,6 @@ window.onclick = function(event) {
         closeExchangeModal();
     }
 };
-
-
-// currency exchange rates
-const exchangeRate = 0.92;
 
 function openExchangeModal() {
     document.getElementById("exchangeModal").style.display = "block";

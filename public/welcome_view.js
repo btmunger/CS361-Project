@@ -35,6 +35,7 @@ document.addEventListener("DOMContentLoaded", function () {
             // When an empty card is clicked, redirect to the "create new" page
             card.addEventListener("click", function(event) {
                 // Prevent the view button's event from being triggered
+                localStorage.setItem("curr_itinerary", i);
                 event.stopPropagation();
                 window.location.href = "createnew.html";
             });
