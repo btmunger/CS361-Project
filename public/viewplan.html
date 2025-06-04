@@ -27,7 +27,7 @@
     </div>
 
     <div class="field">
-      <p><strong>Conversion Rate:</strong> 1 USD = 1 USD</p>
+      <p><strong>Conversion Rate:</strong></p>
       <button class="view-btn" onclick="openExchangeModal()">View</button>
     </div>
   </div>
@@ -48,9 +48,11 @@
   <div class="modal-content">
     <span class="close" onclick="closeExchangeModal()">&times;</span>
     <h3>Exchange Rate</h3>
-    <p>1 USD = <strong>0.92 EUR</strong></p>
 
-    <input type="number" id="usdAmount" placeholder="Enter USD amount">
+    <input type="text" id="fromCurrency" placeholder="From (e.g. USD)" />
+    <input type="text" id="toCurrency" placeholder="To (e.g. EUR)" />
+    <input type="number" id="amount" placeholder="Amount" />
+
     <button class="view-btn" onclick="convertCurrency()">Convert</button>
 
     <div id="convertedResult"></div>
