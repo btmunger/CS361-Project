@@ -1,7 +1,8 @@
+// Empty flight cookies if change flight is requested
 localStorage.setItem("itinerary" + localStorage.getItem("curr_itinerary") + "_flightdep", "");
 localStorage.setItem("itinerary" + localStorage.getItem("curr_itinerary") + "_flightarriv", "");
 
-// Utility: Check if input is a valid IATA code
+// Function to check if input is a valid IATA code
 function isIATACode(input) {
   return /^[A-Z]{3}$/i.test(input.trim());
 }
@@ -13,12 +14,12 @@ async function getAccessToken() {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       grant_type: "client_credentials",
-      client_id: "mx80QGvz20qyA6AETr5juh3cAVvR3HzY",
-      client_secret: "oTisKQmxqVqJhqNx"
+      client_id: "PZQqEu6BvEt7O9e2nBEGAheEzA1CjwdM",
+      client_secret: "ctkPbIP9YRPfGG60" // Would hide in actual production
     })
   });
   const data = await res.json();
-  console.log('Access Token:', data.access_token);  // Log the token
+  console.log('Access Token:', data.access_token);  
   return data.access_token;
 }
 
@@ -37,7 +38,8 @@ async function getAirlineName(code, token) {
 
   // Check if airline name is something like "AMADEUS SIX" or an invalid name
   if (name.includes("AMADEUS") || name === "N/A") {
-    name = "Unknown Airline";  // Fallback to a more appropriate value
+    // Fallback to a more appropriate value
+    name = "Unknown Airline";  
   }
 
   airlineNameCache[code] = name;
@@ -112,7 +114,7 @@ async function searchFlights({ origin, destination, date, containerId, label }) 
 
     // Skip flights with "Unknown Airline"
     if (airlineName === "Unknown Airline") {
-      continue;  // Skip this flight
+      continue; 
     }
 
     const usdPrice = (parseFloat(offer.price.total) * eurToUsdRate).toFixed(2);
@@ -147,7 +149,7 @@ async function searchFlights({ origin, destination, date, containerId, label }) 
     
       if (dep.length > 0 && ret.length > 0) {
         // Redirect to view page
-        window.location.href = "viewplan.html";  // Change this if your view page has a different name
+        window.location.href = "viewplan.html";  
       } else {
         alert(`${label} selected! Now select the ${label.includes("Return") ? "departure" : "return"} flight.`);
       }
@@ -158,8 +160,6 @@ async function searchFlights({ origin, destination, date, containerId, label }) 
     shown++;
   }
 }
-
-
 
 // On page load
 document.addEventListener("DOMContentLoaded", () => {
@@ -187,7 +187,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Create results container if needed
+    // Create results container
     let results = document.getElementById("results");
     if (!results) {
       results = document.createElement("div");
