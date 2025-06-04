@@ -1,4 +1,6 @@
+// Function for connecting to the microservice to find hotels
 async function connectToMicroserviceB(params) {
+    // Connection URL
     const url = `http://localhost:5003/hotels?${params.toString()}`;
     try {
         const response = await fetch(url, {
@@ -13,17 +15,74 @@ async function connectToMicroserviceB(params) {
 
         const data = await response.json();
         console.log(`Found ${data.hotel_count} hotels`);
+        // Return hotels found
         return data.hotels;
-
+    // Connection to microservice failed
     } catch (error) {
         console.error("Failed to fetch hotel data:", error);
         return null;
     }
 }
 
-function displayHotelOptions() {
-    console.log("display options here");
+// Function for displaying the hotel options to the user
+async function displayHotelOptions(hotels) {
+  let results = document.getElementById("results");
+  // Create the results DIV container if it does not yet exist
+  if (!results) {
+    results = document.createElement("div");
+    results.id = "results";
+    document.querySelector(".form-container").appendChild(results);
+  }
+
+  results.innerHTML = "<p>Searching hotels...</p>";
+
+  // If no results are returned, no hotels are available in that area
+  if (!hotels || hotels.length === 0) {
+    results.innerHTML = "<p>No hotels found.</p>";
+    return;
+  }
+  results.innerHTML = ""; 
+
+  // List the first 20 hotel options
+  hotels.slice(0, 20).forEach(hotel => {
+    const card = document.createElement("div");
+    card.className = "hotel-card";
+
+    const name = document.createElement("h3");
+    name.textContent = hotel.name || "Unnamed Hotel";
+    card.appendChild(name);
+
+    if (hotel.address) {
+      const address = document.createElement("p");
+      address.textContent = [
+        ...(hotel.address.lines || []),
+        hotel.address.cityName,
+        hotel.address.postalCode
+      ].filter(Boolean).join(", ");
+      card.appendChild(address);
+    }
+
+    const price = document.createElement("p");
+    price.textContent = (hotel.price && hotel.currency) 
+      ? `Price: ${hotel.price} ${hotel.currency}` 
+      : "Price: Not available";
+    card.appendChild(price);
+
+    // Create the "Choose Hotel" button
+    const chooseBtn = document.createElement("button");
+    chooseBtn.textContent = "Choose Hotel";
+    chooseBtn.addEventListener("click", () => {
+        // Store chosen hotel info in localStorage
+        const itineraryKey = localStorage.getItem("curr_itinerary");
+        localStorage.setItem("itinerary" + itineraryKey + "_hotel", JSON.stringify(hotel));
+        window.location.href = "viewplan.html";
+    });
+
+    card.appendChild(chooseBtn);
+    results.appendChild(card);
+  });
 }
+
 
 // On page load
 document.addEventListener("DOMContentLoaded", () => {

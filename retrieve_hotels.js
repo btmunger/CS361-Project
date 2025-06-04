@@ -16,94 +16,44 @@ async function getAccessToken() {
     body: new URLSearchParams({
       grant_type: "client_credentials",
       client_id: "PZQqEu6BvEt7O9e2nBEGAheEzA1CjwdM",
-      // API key, would hide in actual production
-      client_secret: "ctkPbIP9YRPfGG60" 
+      client_secret: "ctkPbIP9YRPfGG60"
     })
   });
   const data = await res.json();
   return data.access_token;
 }
 
-async function getHotelIdsByCity(cityCode, token) {
-  // First get city geolocation from /locations
-  const locationUrl = new URL("https://api.amadeus.com/v1/reference-data/locations");
-  locationUrl.searchParams.set("keyword", cityCode);
-  locationUrl.searchParams.set("subType", "CITY");
-
-  const locationRes = await fetch(locationUrl.toString(), {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-
-  const locationData = await locationRes.json();
-  if (!locationData || !locationData.data || locationData.data.length === 0) {
-    return [];
-  }
-
-  const { latitude, longitude } = locationData.data[0].geoCode;
-
-  // Now query nearby hotels by geocode
-  const hotelUrl = new URL("https://api.amadeus.com/v1/reference-data/locations/hotels/by-geocode");
-  hotelUrl.searchParams.set("latitude", latitude);
-  hotelUrl.searchParams.set("longitude", longitude);
-  hotelUrl.searchParams.set("radius", 20); // Optional, in KM. Adjust if needed.
-  hotelUrl.searchParams.set("radiusUnit", "KM");
-
-  const hotelRes = await fetch(hotelUrl.toString(), {
-    headers: { Authorization: `Bearer ${token}` }
-  });
-
-  const hotelData = await hotelRes.json();
-  console.log("Nearby hotel data:", hotelData);
-
-  if (!hotelData || !hotelData.data || hotelData.data.length === 0) {
-    return [];
-  }
-
-  return hotelData.data.map(h => h.hotelId);
-}
-
-
-// Convert user entered city to 'city code'
+// Resolve city name to IATA city code
 async function resolveCityToIATACode(cityName, token) {
-    const url = new URL("https://api.amadeus.com/v1/reference-data/locations");
-    url.searchParams.set("keyword", cityName);
-    url.searchParams.set("subType", "CITY");
-
-    const res = await fetch(url.toString(), {
-        headers: { Authorization: `Bearer ${token}` }
-    });
-
-    const data = await res.json();
-
-    if (!data || !data.data || data.data.length === 0) {
-        return null;
-    }
-
-    return data.data[0].iataCode;
-}
-
-// Search hotel deals
-async function searchHotelsByIds(hotelIds, checkInDate, checkOutDate, adults, rooms) {
-  if (hotelIds.length === 0) {
-    throw new Error("No hotelIds provided");
-  }
-
-  const token = await getAccessToken();
-
-  const url = new URL("https://api.amadeus.com/v2/shopping/hotel-offers/by-hotel");
-  // hotelIds is an array of strings; need to pass them properly (repeated params or JSON string)
-  hotelIds.forEach(id => url.searchParams.append("hotelIds", id));
-  url.searchParams.set("checkInDate", checkInDate);
-  url.searchParams.set("checkOutDate", checkOutDate);
-  url.searchParams.set("adults", adults.toString());
-  url.searchParams.set("roomQuantity", rooms.toString());
+  const url = new URL("https://api.amadeus.com/v1/reference-data/locations");
+  url.searchParams.set("keyword", cityName);
+  url.searchParams.set("subType", "CITY");
 
   const res = await fetch(url.toString(), {
     headers: { Authorization: `Bearer ${token}` }
   });
 
   const data = await res.json();
-  if (!data || !data.data) {
+
+  if (!data || !data.data || data.data.length === 0) {
+    return null;
+  }
+
+  return data.data[0].iataCode;
+}
+
+// Get hotels by geocode (latitude, longitude)
+async function getHotelsByCity(cityCode, token) {
+  const url = new URL("https://api.amadeus.com/v1/reference-data/locations/hotels/by-city");
+  url.searchParams.set("cityCode", cityCode);
+
+  const res = await fetch(url.toString(), {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  const data = await res.json();
+
+  if (!data || !data.data || data.data.length === 0) {
     return [];
   }
 
@@ -111,29 +61,96 @@ async function searchHotelsByIds(hotelIds, checkInDate, checkOutDate, adults, ro
 }
 
 
+// Get hotel offers (prices) by hotelId and date info
+async function getHotelOffersForHotels(hotelIds, checkInDate, checkOutDate, adults, rooms, token) {
+  const offersMap = {};
+
+  // Chunk into batches of 20
+  for (let i = 0; i < hotelIds.length; i += 20) {
+    const batch = hotelIds.slice(i, i + 20);
+    const url = new URL("https://api.amadeus.com/v2/shopping/hotel-offers");
+    url.searchParams.set("hotelIds", batch.join(","));
+    url.searchParams.set("checkInDate", checkInDate);
+    url.searchParams.set("checkOutDate", checkOutDate);
+    url.searchParams.set("adults", adults.toString());
+    url.searchParams.set("roomQuantity", rooms.toString());
+
+    try {
+      const res = await fetch(url.toString(), {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      const data = await res.json();
+
+      if (data.errors || !data.data) {
+        console.error("Error in hotel offers batch:", data.errors || data);
+        continue;
+      }
+
+      for (const hotelOffer of data.data) {
+        const hotelId = hotelOffer.hotel.hotelId;
+        const offer = hotelOffer.offers && hotelOffer.offers[0];
+        if (offer && offer.price) {
+          offersMap[hotelId] = {
+            price: offer.price.total,
+            currency: offer.price.currency
+          };
+        }
+      }
+    } catch (err) {
+      console.error("Error fetching hotel offers:", err);
+    }
+  }
+
+  return offersMap;
+}
+
 app.get('/hotels', async (req, res) => {
   const { cityName, checkIn, checkOut, adults = 1, rooms = 1 } = req.query;
+
   try {
     const token = await getAccessToken();
 
-    // Resolve city name to city code (e.g. LAX)
+    // Step 1: Get IATA code for city
     const cityCode = await resolveCityToIATACode(cityName, token);
     if (!cityCode) {
       return res.status(400).json({ error: "Invalid city name" });
     }
 
-    // Get hotelIds in city
-    const hotelIds = await getHotelIdsByCity(cityCode, token);
-    if (hotelIds.length === 0) {
+    // Step 2: Get hotels near the city
+    const hotels = await getHotelsByCity(cityCode, token);
+    if (hotels.length === 0) {
       return res.status(404).json({ error: "No hotels found in city" });
     }
 
-    // Search hotel offers by hotelIds
-    const hotels = await searchHotelsByIds(hotelIds, checkIn, checkOut, adults, rooms);
+    // Step 3: Get all hotel IDs
+    const hotelIds = hotels.map(h => h.hotelId);
+
+    // Step 4: Call once to get all hotel offers
+    const offersMap = await getHotelOffersForHotels(
+      hotelIds,
+      checkIn,
+      checkOut,
+      adults,
+      rooms,
+      token
+    );
+
+    // Step 5: Merge offers back into hotels
+    const hotelsWithPrices = hotels.map(hotel => {
+      const offer = offersMap[hotel.hotelId];
+      return {
+        name: hotel.name,
+        hotelId: hotel.hotelId,
+        address: hotel.address,
+        price: offer?.price ?? null,
+        currency: offer?.currency ?? null,
+      };
+    });
 
     res.json({
-      hotel_count: hotels.length,
-      hotels
+      hotel_count: hotelsWithPrices.length,
+      hotels: hotelsWithPrices
     });
   } catch (error) {
     console.error("Server error:", error);
@@ -141,7 +158,8 @@ app.get('/hotels', async (req, res) => {
   }
 });
 
-// Listen for request 
+
+// Listen for request
 app.listen(PORT, () => {
   console.log(`Hotel microservice running on http://localhost:${PORT}`);
 });

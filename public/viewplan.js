@@ -82,6 +82,23 @@ function returnHome() {
 
 document.addEventListener("DOMContentLoaded", () => {
     const itineraryKey = localStorage.getItem("curr_itinerary");
+
+    // Hotel raw information
+    const hotelRaw = localStorage.getItem("itinerary" + itineraryKey + "_hotel");
+
+    // If a hotel has been chosen 
+    if (hotelRaw) {
+          try {
+            const hotel = JSON.parse(hotelRaw);
+            document.getElementById("hotelinfo").innerText = `${hotel.name || "Unknown"}`;
+        } catch (e) {
+            console.error("Failed to parse hotel data:", e);
+            document.getElementById("hotelinfo").innerText = "Hotel information unavailable";
+        }
+    } else {
+        document.getElementById("hotelinfo").innerText = "No hotel selected yet."
+    }
+
     // Departure / Arrival flight raw information
     const depRaw = localStorage.getItem("itinerary" + itineraryKey + "_flightdep");
     const arrivRaw = localStorage.getItem("itinerary" + itineraryKey + "_flightarriv");
