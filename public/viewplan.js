@@ -85,9 +85,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Departure / Arrival flight raw information
     const depRaw = localStorage.getItem("itinerary" + itineraryKey + "_flightdep");
     const arrivRaw = localStorage.getItem("itinerary" + itineraryKey + "_flightarriv");
-    // Console log the flight raw information
-    console.log("depRaw:", depRaw);
-    console.log("arrivRaw:", arrivRaw);
 
     // If a flight has been chosen (with both the departure and arrival chosen)
     if (depRaw && arrivRaw) {

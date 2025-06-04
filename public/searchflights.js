@@ -15,11 +15,11 @@ async function getAccessToken() {
     body: new URLSearchParams({
       grant_type: "client_credentials",
       client_id: "PZQqEu6BvEt7O9e2nBEGAheEzA1CjwdM",
-      client_secret: "ctkPbIP9YRPfGG60" // Would hide in actual production
+      // API key, would hide in actual production
+      client_secret: "ctkPbIP9YRPfGG60" 
     })
   });
   const data = await res.json();
-  console.log('Access Token:', data.access_token);  
   return data.access_token;
 }
 
@@ -69,10 +69,30 @@ async function resolveToIATACode(input, token) {
   return matchesCity?.iataCode || null;
 }
 
+// Function for converting the EUR price to USD
+async function getUSDPrice(eurPrice) {
+  const url = `http://localhost:5002/convert?from=EUR&to=USD&amount=${eurPrice}`;
+
+  try {
+        // Retrieve the response from the converter microservice
+        const response = await fetch(url, { method: "GET", timeout: 15000 });
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.log(errorData)
+        }
+
+        // Gather the conversion data from the microservice, parse the text and send it to the div
+        const data = await response.json();
+        return data.converted_amount;
+  } catch (error) {
+        console.error("Conversion error:", error);
+        return null;
+  }
+}
+
 // Search and display flights
 async function searchFlights({ origin, destination, date, containerId, label }) {
   const token = await getAccessToken();
-  const eurToUsdRate = await getEURtoUSDExchangeRate();
 
   const url = new URL("https://api.amadeus.com/v2/shopping/flight-offers");
   url.searchParams.set("originLocationCode", origin);
@@ -98,7 +118,7 @@ async function searchFlights({ origin, destination, date, containerId, label }) 
   let shown = 0;
 
   for (const offer of data.data) {
-    if (shown >= 500) break;
+    if (shown >= 20) break;
 
     // Check if flight is direct (only 1 segment)
     const segments = offer.itineraries[0].segments;
@@ -108,7 +128,10 @@ async function searchFlights({ origin, destination, date, containerId, label }) 
     const airline = segment.operating?.carrierCode || segment.carrierCode;
 
     airlineCounts[airline] = (airlineCounts[airline] || 0) + 1;
-    if (airlineCounts[airline] > 5) continue;
+    if (airlineCounts[airline] > 7) {
+      shown--;
+      continue;
+    }
 
     const airlineName = await getAirlineName(airline, token);
 
@@ -117,7 +140,9 @@ async function searchFlights({ origin, destination, date, containerId, label }) 
       continue; 
     }
 
-    const usdPrice = (parseFloat(offer.price.total) * eurToUsdRate).toFixed(2);
+    // API returns prices in EUR, convert to USD using microservice
+    const usdPrice = await getUSDPrice(offer.price.total);
+    const price = usdPrice !== undefined ? usdPrice.toFixed(2) : "Unavailable";
 
     const div = document.createElement("div");
     div.className = "flight-offer";
@@ -125,7 +150,7 @@ async function searchFlights({ origin, destination, date, containerId, label }) 
       <p><strong>Airline:</strong> ${airlineName}</p>
       <p><strong>From:</strong> ${segment.departure.iataCode} at ${segment.departure.at}</p>
       <p><strong>To:</strong> ${segment.arrival.iataCode} at ${segment.arrival.at}</p>
-      <p><strong>Price:</strong> $${usdPrice} USD</p>
+      <p><strong>Price:</strong> $${price} USD</p>
       <button class="select-flight-btn">Select</button>
       <hr/>
     `;
@@ -136,7 +161,7 @@ async function searchFlights({ origin, destination, date, containerId, label }) 
       fromTime: segment.departure.at,
       to: segment.arrival.iataCode,
       toTime: segment.arrival.at,
-      price: usdPrice
+      price: price
     };
     
     div.querySelector(".select-flight-btn").addEventListener("click", () => {
