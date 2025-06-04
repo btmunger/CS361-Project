@@ -1,7 +1,10 @@
+// Function for deleting an initerary from the program 
 function confirmDelete(itinerary, event) {
     event.stopPropagation();  // Prevent event from bubbling up to the card click event
     const confirmDelete = confirm("Are you sure you want to delete this itinerary forever?");
+    // If the user wishes to continue with the deletion...
     if (confirmDelete) {
+        // Reset text boxes
         document.getElementById("createnew" + itinerary).style.visibility = "visible";
         document.getElementById("card" + itinerary).className = "card empty";
         document.getElementById("card" + itinerary + "_content").style.visibility = "hidden";
@@ -11,16 +14,19 @@ function confirmDelete(itinerary, event) {
         localStorage.setItem("itinerary" + itinerary, "");
         localStorage.setItem("itinerary" + itinerary + "_desc", "");
 
+        // Redirect user
         window.location.href = "welcome_view.html";
     }
 }
 
+// Function to redirect user to the current itinerary
 function viewItinerary(itinerary, event) {
-    event.stopPropagation();  // Prevent event from propagating to the card click
+    event.stopPropagation();  
     localStorage.setItem("curr_itinerary", itinerary);
     window.location.href = "viewplan.html";
 }
 
+// If the card is clicked...
 document.addEventListener("DOMContentLoaded", function () {
     // Loop through the 5 possible itinerary cards
     for (let i = 1; i <= 5; i++) {
