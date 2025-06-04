@@ -11,14 +11,14 @@ function confirmDelete(itinerary, event) {
         localStorage.setItem("itinerary" + itinerary, "");
         localStorage.setItem("itinerary" + itinerary + "_desc", "");
 
-        window.location.href = "https://web.engr.oregonstate.edu/~mungerbr/travelproj/welcome_view.html";
+        window.location.href = "welcome_view.html";
     }
 }
 
 function viewItinerary(itinerary, event) {
     event.stopPropagation();  // Prevent event from propagating to the card click
     localStorage.setItem("curr_itinerary", itinerary);
-    window.location.href = "https://web.engr.oregonstate.edu/~mungerbr/travelproj/viewplan.html";
+    window.location.href = "viewplan.html";
 }
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", function () {
             card.addEventListener("click", function(event) {
                 // Prevent the view button's event from being triggered
                 event.stopPropagation();
-                window.location.href = "https://web.engr.oregonstate.edu/~mungerbr/travelproj/createnew.html";
+                window.location.href = "createnew.html";
             });
         } else {
             // If the card has data, mark it as a saved card

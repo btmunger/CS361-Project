@@ -44,7 +44,7 @@ function convertCurrency() {
 }
 
 function returnHome() {
-    window.location.href = "https://web.engr.oregonstate.edu/~mungerbr/travelproj/welcome_view.html";
+    window.location.href = "welcome_view.html";
 }
 
 document.addEventListener("DOMContentLoaded", () => {

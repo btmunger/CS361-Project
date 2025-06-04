@@ -9,6 +9,6 @@ document.addEventListener("DOMContentLoaded", function () {
         localStorage.setItem("itinerary" + curr_itinerary, document.getElementById("title").value);
         localStorage.setItem("itinerary" + curr_itinerary + "_desc", document.getElementById("description").value);
 
-        window.location.href = "https://web.engr.oregonstate.edu/~mungerbr/travelproj/viewplan.html";
+        window.location.href = "viewplan.html";
     });
 });

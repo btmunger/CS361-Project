@@ -8,7 +8,7 @@ function isIATACode(input) {
 
 // Get Amadeus Access Token
 async function getAccessToken() {
-  const res = await fetch("https://test.api.amadeus.com/v1/security/oauth2/token", {
+  const res = await fetch("https://api.amadeus.com/v1/security/oauth2/token", {
     method: "POST",
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
@@ -28,7 +28,7 @@ const airlineNameCache = {};
 async function getAirlineName(code, token) {
   if (airlineNameCache[code]) return airlineNameCache[code];
 
-  const res = await fetch(`https://test.api.amadeus.com/v1/reference-data/airlines?airlineCodes=${code}`, {
+  const res = await fetch(`https://api.amadeus.com/v1/reference-data/airlines?airlineCodes=${code}`, {
     headers: { Authorization: `Bearer ${token}` }
   });
 
@@ -50,7 +50,7 @@ async function resolveToIATACode(input, token) {
   if (isIATACode(input)) return input.toUpperCase();
 
   const res = await fetch(
-    `https://test.api.amadeus.com/v1/reference-data/locations?keyword=${encodeURIComponent(input)}&subType=AIRPORT&view=FULL`,
+    `https://api.amadeus.com/v1/reference-data/locations?keyword=${encodeURIComponent(input)}&subType=AIRPORT&view=FULL`,
     {
       headers: { Authorization: `Bearer ${token}` }
     }
@@ -67,25 +67,12 @@ async function resolveToIATACode(input, token) {
   return matchesCity?.iataCode || null;
 }
 
-
-// Convert EUR to USD using fallback
-async function getEURtoUSDExchangeRate() {
-  try {
-    const res = await fetch("https://test.api.exchangerate.host/latest?base=EUR&symbols=USD");
-    const data = await res.json();
-    return data.rates?.USD || 1.1;
-  } catch (err) {
-    console.warn("Exchange rate API failed. Using fallback.");
-    return 1.1;
-  }
-}
-
 // Search and display flights
 async function searchFlights({ origin, destination, date, containerId, label }) {
   const token = await getAccessToken();
   const eurToUsdRate = await getEURtoUSDExchangeRate();
 
-  const url = new URL("https://test.api.amadeus.com/v2/shopping/flight-offers");
+  const url = new URL("https://api.amadeus.com/v2/shopping/flight-offers");
   url.searchParams.set("originLocationCode", origin);
   url.searchParams.set("destinationLocationCode", destination);
   url.searchParams.set("departureDate", date);
@@ -160,7 +147,7 @@ async function searchFlights({ origin, destination, date, containerId, label }) 
     
       if (dep.length > 0 && ret.length > 0) {
         // Redirect to view page
-        window.location.href = "https://web.engr.oregonstate.edu/~mungerbr/travelproj/viewplan.html";  // Change this if your view page has a different name
+        window.location.href = "viewplan.html";  // Change this if your view page has a different name
       } else {
         alert(`${label} selected! Now select the ${label.includes("Return") ? "departure" : "return"} flight.`);
       }
