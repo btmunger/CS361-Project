@@ -190,7 +190,7 @@ async function searchFlights({ origin, destination, date, containerId, label }) 
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("flightSearchForm");
   if (!form) {
-    console.error("Form with id='flightSearchForm' not found.");
+    console.error("Flight search form not found.");
     return;
   }
 
