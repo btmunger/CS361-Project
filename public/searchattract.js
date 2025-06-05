@@ -1,7 +1,7 @@
 // Function for connecting to the microservice to find attractions
 async function connectToMicroserviceC(cityName){
     // Connection URL
-    const url = `http://localhost:5004/attract?${cityName}`; 
+    const url = `http://localhost:5004/attract?city=${cityName}`; 
     try {
         const response = await fetch(url, {
         method: 'GET'
@@ -35,7 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        const cityName = document.getElementById("city");
+        const cityName = document.getElementById("city").value.trim();
         connectToMicroserviceC(cityName);
     });
 });

@@ -1,8 +1,14 @@
 const axios = require("axios");
+const express = require('express');
+const fetch = require('node-fetch');
+const cors = require('cors');
+
 require('dotenv').config();
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 
+const app = express();
 const PORT = 5004;
+app.use(cors())
 
 // Get lat/lng for a city using Geocoding API
 async function getCoordinatesFromCity(cityName) {
@@ -78,15 +84,15 @@ async function findAttractionsInCity(city) {
 
 // Endpoint: /attract
 app.get('/attract', async (req, res) => {
-    const cityName = req.query;
+    const cityName = req.query.city;
 
     try {
-    findAttractionsInCity(cityName);
-    
-    res.json({
-        success: true,
-        message: `Successfully retrieved attractions for ${cityName}`
-    });
+        await findAttractionsInCity(cityName);
+        
+        res.json({
+            success: true,
+            message: `Successfully retrieved attractions for ${cityName}`
+        });
     } catch (error) {
         console.error("Error finding attractions: " + error);
         res.status(500).json({error: "Internal server error"});
