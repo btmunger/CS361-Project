@@ -2,6 +2,8 @@ const axios = require("axios");
 require('dotenv').config();
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY;
 
+const PORT = 5004;
+
 // Get lat/lng for a city using Geocoding API
 async function getCoordinatesFromCity(cityName) {
   const url = 'https://maps.googleapis.com/maps/api/geocode/json';
@@ -73,3 +75,26 @@ async function findAttractionsInCity(city) {
     console.error(error.message);
   }
 }
+
+// Endpoint: /attract
+app.get('/attract', async (req, res) => {
+    const cityName = req.query;
+
+    try {
+    findAttractionsInCity(cityName);
+    
+    res.json({
+        success: true,
+        message: `Successfully retrieved attractions for ${cityName}`
+    });
+    } catch (error) {
+        console.error("Error finding attractions: " + error);
+        res.status(500).json({error: "Internal server error"});
+    }
+
+});
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`Hotel microservice running on http://localhost:${PORT}`);
+});

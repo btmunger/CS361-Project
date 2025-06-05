@@ -1,7 +1,7 @@
 // Function for connecting to the microservice to find attractions
-async function connectToMicroserviceC(){
+async function connectToMicroserviceC(cityName){
     // Connection URL
-    const url = `http://localhost:5004/attract?${}`; // enter parameters here
+    const url = `http://localhost:5004/attract?${cityName}`; 
     try {
         const response = await fetch(url, {
         method: 'GET'
@@ -14,8 +14,9 @@ async function connectToMicroserviceC(){
         }
 
         const data = await response.json();
-        // Return hotels found
-        return data.attractions;
+       
+        if (data.success)
+            console.log("Found attractions!");
     // Connection to microservice failed
     } catch (error) {
         console.error("Failed to fetch attraction data:", error);
@@ -35,6 +36,6 @@ document.addEventListener("DOMContentLoaded", () => {
         e.preventDefault();
 
         const cityName = document.getElementById("city");
-
+        connectToMicroserviceC(cityName);
     });
 });
