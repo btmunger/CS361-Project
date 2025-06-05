@@ -1,7 +1,9 @@
 // Function for connecting to the microservice to find hotels
-async function connectToMicroserviceB(params) {
+//async function connectToMicroserviceB(params) {
+async function connectToMicroserviceB(cityName) {
     // Connection URL
-    const url = `http://localhost:5003/hotels?${params.toString()}`;
+    //const url = `http://localhost:5003/hotels?${params.toString()}`;
+    const url = `http://localhost:5003/hotels?cityName=${cityName}`;
     try {
         const response = await fetch(url, {
         method: 'GET'
@@ -110,7 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
         
         // Connect to microservice
-        const hotels = await connectToMicroserviceB(params);
+        const hotels = await connectToMicroserviceB(city); // change back to params
 
         // Display options to user
         displayHotelOptions(hotels);
