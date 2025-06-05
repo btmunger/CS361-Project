@@ -203,7 +203,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const returnDate = document.getElementById("returnDate").value;
 
     const token = await getAccessToken();
-
     const originCode = await resolveToIATACode(originInput, token);
     const destinationCode = await resolveToIATACode(destinationInput, token);
 
