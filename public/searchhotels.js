@@ -8,9 +8,9 @@ async function connectToMicroserviceB(params) {
         });
 
         if (!response.ok) {
-        const errorData = await response.json();
-        console.error("Hotel search error:", errorData);
-        return null;
+          const errorData = await response.json();
+          console.error("Hotel search error:", errorData);
+          return null;
         }
 
         const data = await response.json();

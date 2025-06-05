@@ -35,8 +35,8 @@ async function getCoordinatesFromCity(cityName) {
 }
 
 // Get tourist attractions nearby using Places API
-// NOTE: radius is how far it will look for attractions, made default 5000 meters
-async function getAttractions(lat, lng, radius = 5000) {
+// NOTE: radius is how far it will look for attractions, made default 15000 meters
+async function getAttractions(lat, lng, radius = 15000) {
   const url = 'https://maps.googleapis.com/maps/api/place/nearbysearch/json';
   try {
     // Find 'tourist attractions' in the lat/lng 
@@ -77,8 +77,11 @@ async function findAttractionsInCity(city) {
       console.log(`${index + 1}. ${place.name} — ${place.address} — ${place.rating}/5`);
     });
 
+    return attractions;
+
   } catch (error) {
     console.error(error.message);
+    return null;
   }
 }
 
@@ -87,11 +90,11 @@ app.get('/attract', async (req, res) => {
     const cityName = req.query.city;
 
     try {
-        await findAttractionsInCity(cityName);
+        const attractions = await findAttractionsInCity(cityName);
         
         res.json({
             success: true,
-            message: `Successfully retrieved attractions for ${cityName}`
+            attractions: attractions
         });
     } catch (error) {
         console.error("Error finding attractions: " + error);
