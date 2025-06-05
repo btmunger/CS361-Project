@@ -8,6 +8,8 @@ const PORT = 5003;
 app.use(cors());
 app.use(express.json());
 
+require('dotenv').config();
+
 // Get Amadeus Access Token
 async function getAccessToken() {
   const res = await fetch("https://api.amadeus.com/v1/security/oauth2/token", {
@@ -15,8 +17,8 @@ async function getAccessToken() {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       grant_type: "client_credentials",
-      client_id: "PZQqEu6BvEt7O9e2nBEGAheEzA1CjwdM",
-      client_secret: "ctkPbIP9YRPfGG60"
+      client_id: process.env.AMADEUS_ID,
+      client_secret: process.env.AMADEUS_API_KEY
     })
   });
   const data = await res.json();

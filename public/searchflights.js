@@ -2,6 +2,8 @@
 localStorage.setItem("itinerary" + localStorage.getItem("curr_itinerary") + "_flightdep", "");
 localStorage.setItem("itinerary" + localStorage.getItem("curr_itinerary") + "_flightarriv", "");
 
+require('dotenv').config();
+
 // Function to check if input is a valid IATA code
 function isIATACode(input) {
   return /^[A-Z]{3}$/i.test(input.trim());
@@ -14,9 +16,8 @@ async function getAccessToken() {
     headers: { "Content-Type": "application/x-www-form-urlencoded" },
     body: new URLSearchParams({
       grant_type: "client_credentials",
-      client_id: "PZQqEu6BvEt7O9e2nBEGAheEzA1CjwdM",
-      // API key, would hide in actual production
-      client_secret: "ctkPbIP9YRPfGG60" 
+      client_id: process.env.AMADEUS_ID,
+      client_secret: process.env.AMADEUS_API_KEY
     })
   });
   const data = await res.json();
