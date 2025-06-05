@@ -1,3 +1,54 @@
+// Function for writing saved attractions to a CSV file to be referenced later
+async function writeCSV(attraction) {
+    const name = `"${attraction.name?.replace(/"/g, '""') || ''}"`;
+    const address = `"${attraction.address?.replace(/"/g, '""') || ''}"`;
+    const rating = `"${attraction.rating || ''}"`;
+
+    const row = `${name},${address},${rating}\n`;
+
+    // Create blob and trigger download
+    const blob = new Blob([row], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "attractions.csv";
+    a.style.display = "none";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    URL.revokeObjectURL(url);
+}
+
+async function saveAttraction(attraction) {
+    // Connection URL
+    const url = `http://localhost:5005/saveattract?attraction=${encodeURIComponent(JSON.stringify(attraction))}`;
+    
+    try {
+        const response = await fetch(url, {
+        method: 'GET'
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Attraction save error:", errorData);
+            return null;
+        }
+
+        const data = await response.json();
+       
+        if (data.success) {
+            console.log("Successfully saved attraction via microservice.");
+        }
+    // Connection to microservice failed
+    } catch (error) {
+        console.error("Failed to fetch and save attraction data:", error);
+        return null;
+    }
+}
+
+// Function for displaying the retrieved attractions to the user for them to choose from
 async function displayAttractions(attractions) {
     let results = document.getElementById("results");
 
@@ -46,7 +97,9 @@ async function displayAttractions(attractions) {
             // Prevent duplicates based on name (or any unique identifier)
             if (!savedAttractions.some(a => a.name === attraction.name)) {
                 savedAttractions.push(attraction);
-                console.log("Attraction saved:"+JSON.stringify(savedAttractions));
+                // Save the attraction to the .csv file
+                console.log("Attraction saved: " + JSON.stringify(attraction));
+                saveAttraction(attraction);
             }
 
             // Change button state
