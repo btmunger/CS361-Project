@@ -1,26 +1,4 @@
-// Function for writing saved attractions to a CSV file to be referenced later
-async function writeCSV(attraction) {
-    const name = `"${attraction.name?.replace(/"/g, '""') || ''}"`;
-    const address = `"${attraction.address?.replace(/"/g, '""') || ''}"`;
-    const rating = `"${attraction.rating || ''}"`;
-
-    const row = `${name},${address},${rating}\n`;
-
-    // Create blob and trigger download
-    const blob = new Blob([row], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "attractions.csv";
-    a.style.display = "none";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-
-    URL.revokeObjectURL(url);
-}
-
+// Function for saving attractions to the list
 async function saveAttraction(attraction) {
     // Connection URL
     const url = `http://localhost:5005/saveattract?attraction=${encodeURIComponent(JSON.stringify(attraction))}`;
@@ -112,7 +90,6 @@ async function displayAttractions(attractions) {
     });
 }
 
-
 // Function for connecting to the microservice to find attractions
 async function connectToMicroserviceC(cityName){
     // Connection URL
@@ -140,27 +117,38 @@ async function connectToMicroserviceC(cityName){
     }
 }
 
-// Function for loading the saaved attractions
+// Function for loading the saved attractions
 async function loadSavedAttractions() {
+    const url = `http://localhost:5005/viewattract`; 
+
     try {
-        const response = await fetch('http://localhost:5005/getcsv');
-        const csvText = await response.text();
-
-        const rows = csvText.trim().split('\n');
-        const headers = rows.shift().split(',');
-
-        const attractions = rows.map(row => {
-            const values = row.split(',');
-            return {
-                name: values[0].replace(/"/g, ''),
-                address: values[1].replace(/"/g, ''),
-                rating: values[2].replace(/"/g, '')
-            };
+        const response = await fetch(url, {
+            method: 'GET'
         });
 
-        // Now display them on the page
-        const results = document.getElementById('results');
-        results.innerHTML = ''; // Clear previous content
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error("Error fetching saved attractions:", errorData);
+            return null;
+        }
+
+        const data = await response.json();
+
+        if (!data.success) {
+            console.error("Server returned unsuccessful response.");
+            return;
+        }
+
+        const attractions = data.attractions;
+
+        const results = document.getElementById('results') || (() => {
+            const el = document.createElement("div");
+            el.id = "results";
+            document.querySelector(".form-container").appendChild(el);
+            return el;
+        })();
+
+        results.innerHTML = ''; 
 
         attractions.forEach(attraction => {
             const card = document.createElement("div");
@@ -176,7 +164,8 @@ async function loadSavedAttractions() {
         });
 
     } catch (error) {
-        console.error('Error loading CSV:', error);
+        console.error("Error fetching saved attractions:", error);
+        return null;
     }
 }
 
@@ -198,13 +187,6 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     viewbtn.addEventListener("click", () => {
-        const filePath = path.join(__dirname, 'attractions.csv');
-
-        app.get('/getcsv', (req, res) => {
-            res.sendFile(filePath);
-        });
-
         loadSavedAttractions();
     });
-
 });

@@ -11,7 +11,6 @@ app.use(cors());
 async function writeCSV(attraction) {
     const filePath = path.join(__dirname, 'attractions.csv');
 
-    // Optional: Write header only if the file doesn't exist yet
     if (!fs.existsSync(filePath)) {
         const header = `"Name","Address","Rating"\n`;
         fs.writeFileSync(filePath, header);
@@ -22,9 +21,41 @@ async function writeCSV(attraction) {
     const rating = `"${attraction.rating || ''}"`;
 
     const row = `${name},${address},${rating}\n`;
-
     fs.appendFileSync(filePath, row);
 }
+
+// Function to read the CSV
+async function viewCSV() {
+    const filePath = path.join(__dirname, 'attractions.csv');
+    if (!fs.existsSync(filePath)) return [];
+
+    const csvText = fs.readFileSync(filePath, 'utf-8');
+    const lines = csvText.trim().split('\n');
+    lines.shift(); // Remove header
+
+    const attractions = lines.map(line => {
+        const [name, address, rating] = line
+            .split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/)
+            .map(field => field.replace(/^"|"$/g, '').replace(/""/g, '"'));
+        return { name, address, rating };
+    });
+
+    return attractions;
+}
+
+// Endpoint: /viewattract
+app.get('/viewattract', async (req, res) => {
+    try {
+        const attractions = await viewCSV();
+        res.json({
+            success: true,
+            attractions: attractions
+        });
+    } catch (error) {
+        console.error("Error viewing attractions:", error);
+        res.status(500).json({ error: "Internal server error" });
+    }
+});
 
 // Endpoint: /saveattract
 app.get('/saveattract', async (req, res) => {
@@ -32,18 +63,14 @@ app.get('/saveattract', async (req, res) => {
 
     try {
         await writeCSV(attraction);
-        
-        res.json({
-            success: true
-        });
+        res.json({ success: true });
     } catch (error) {
-        console.error("Error saving attractions: " + error);
-        res.status(500).json({error: "Internal server error"});
+        console.error("Error saving attraction:", error);
+        res.status(500).json({ error: "Internal server error" });
     }
-
 });
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`Hotel microservice running on http://localhost:${PORT}`);
+    console.log(`Attraction microservice running on http://localhost:${PORT}`);
 });
