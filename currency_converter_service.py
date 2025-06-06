@@ -7,7 +7,7 @@ import time
 
 #Added CORS to work with my JS project -Brian Munger 06.03.2025
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}}, supports_credentials=True)
+CORS(app, resources={r"/*": {"origins": "http://localhost:5000"}}, supports_credentials=True)
 
 #api endpoint we use to get exchange rates
 EXCHANGE_API_URL = "https://api.exchangerate-api.com/v4/latest/"
