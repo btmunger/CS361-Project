@@ -24,7 +24,7 @@ async function writeCSV(attraction) {
 async function saveAttraction(attraction) {
     // Connection URL
     const url = `http://localhost:5005/saveattract?attraction=${encodeURIComponent(JSON.stringify(attraction))}`;
-    
+
     try {
         const response = await fetch(url, {
         method: 'GET'
@@ -140,9 +140,51 @@ async function connectToMicroserviceC(cityName){
     }
 }
 
+// Function for loading the saaved attractions
+async function loadSavedAttractions() {
+    try {
+        const response = await fetch('http://localhost:5005/getcsv');
+        const csvText = await response.text();
+
+        const rows = csvText.trim().split('\n');
+        const headers = rows.shift().split(',');
+
+        const attractions = rows.map(row => {
+            const values = row.split(',');
+            return {
+                name: values[0].replace(/"/g, ''),
+                address: values[1].replace(/"/g, ''),
+                rating: values[2].replace(/"/g, '')
+            };
+        });
+
+        // Now display them on the page
+        const results = document.getElementById('results');
+        results.innerHTML = ''; // Clear previous content
+
+        attractions.forEach(attraction => {
+            const card = document.createElement("div");
+            card.className = "hotel-card";
+
+            card.innerHTML = `
+                <h3>${attraction.name}</h3>
+                <p>${attraction.address}</p>
+                <p>Rating: ${attraction.rating} / 5</p>
+            `;
+
+            results.appendChild(card);
+        });
+
+    } catch (error) {
+        console.error('Error loading CSV:', error);
+    }
+}
+
 // On page load
 document.addEventListener("DOMContentLoaded", () => {
     const form = document.getElementById("attractSearchForm");
+    const viewbtn = document.getElementById("viewbtn");
+
     if (!form) {
         console.error("Attraction search form not found.");
         return;
@@ -154,4 +196,15 @@ document.addEventListener("DOMContentLoaded", () => {
         const cityName = document.getElementById("city").value.trim();
         connectToMicroserviceC(cityName);
     });
+
+    viewbtn.addEventListener("click", () => {
+        const filePath = path.join(__dirname, 'attractions.csv');
+
+        app.get('/getcsv', (req, res) => {
+            res.sendFile(filePath);
+        });
+
+        loadSavedAttractions();
+    });
+
 });

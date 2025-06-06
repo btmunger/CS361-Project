@@ -7,6 +7,7 @@ const app = express();
 const PORT = 5005;
 app.use(cors());
 
+// Function for writing the attractions to a CSV file
 async function writeCSV(attraction) {
     const filePath = path.join(__dirname, 'attractions.csv');
 
